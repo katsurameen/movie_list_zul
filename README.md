@@ -1,6 +1,8 @@
 # movie_list_zul
 
-A new Flutter project.
+project to see the movie list
+
+![Example Image](assets/picture/Screenshot%202023-09-21%20144627.png)
 
 ## Getting Started
 
