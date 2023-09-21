@@ -6,6 +6,7 @@ class HomeController extends GetxController {
   final TmdbService _tmdbService = TmdbService();
   var movies = [].obs;
   var nowPlayingMovies = [].obs;
+  var topRatedMovies = [].obs;
   var searchQuery = ''.obs; // Stores the search query
   var filteredMovies = [].obs; // Stores the filtered movies
 
@@ -37,13 +38,15 @@ class HomeController extends GetxController {
         return movie;
       }).toList();
 
-      if (category == 'popular') {
+      if (category == 'popular') { // movies popular
         movies.assignAll(movieList);
         debugPrint('Popular Movies are fetched');
-      } else if (category == 'now_playing') {
-        // Assign the nowPlayingMovies variable
+      } else if (category == 'now_playing') { // movies now playing
         nowPlayingMovies.assignAll(movieList);
         debugPrint('Now Playing Movies are fetched');
+      } else if (category == 'top_rated') { // movies top rated
+        topRatedMovies.assignAll(movieList);
+        debugPrint('Top Rated Movies are fetched');
       }
     } catch (e) {
       debugPrint('Error fetching movies: $e');

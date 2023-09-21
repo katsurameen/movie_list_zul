@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:movie_list_zul/app/data/config/App_colors.dart';
 import '../controllers/home_controller.dart';
 
 class HomeView extends GetView<HomeController> {
@@ -16,12 +17,26 @@ class HomeView extends GetView<HomeController> {
               textStyle:
                   TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
         ),
-        // centerTitle: true,
+        backgroundColor: AppColors.appBarColor,
+        elevation: 10, // Adjust the elevation to control the shadow intensity
       ),
+      backgroundColor: AppColors.primaryBg,
       body: ListView(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16),
+            child: Text(
+              'Hello, Good afternoon',
+              style: GoogleFonts.poppins(
+                textStyle: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0.0),
             child: Text(
               'Popular',
               style: GoogleFonts.poppins(
@@ -33,6 +48,7 @@ class HomeView extends GetView<HomeController> {
             ),
           ),
           Container(
+            decoration: BoxDecoration(color: AppColors.appBarColor),
             height: 200, // Adjust the height as needed
             child: Obx(
               () => ListView.builder(
@@ -63,7 +79,7 @@ class HomeView extends GetView<HomeController> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.fromLTRB(16.0, 20.0, 16.0, 16.0),
             child: Row(
               children: [
                 Expanded(
@@ -112,60 +128,81 @@ class HomeView extends GetView<HomeController> {
             ),
           ),
           Obx(
-            () => ListView(
+            () => ListView.builder(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
-              children: controller.searchQuery.value.isEmpty
-                  ? controller.nowPlayingMovies.map((movie) {
-                      return ListTile(
-                        leading: Container(
-                          height: 250,
+              itemCount: controller.searchQuery.value.isEmpty
+                  ? controller.nowPlayingMovies.length
+                  : controller.filteredMovies.length,
+              itemBuilder: (context, index) {
+                final movie = controller.searchQuery.value.isEmpty
+                    ? controller.nowPlayingMovies[index]
+                    : controller.filteredMovies[index];
+
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16.0),
+                        child: Container(
                           width: 120,
                           child: Image.network(
-                            movie['backdrop_path'],
+                            movie['poster_path'],
                             fit: BoxFit.cover,
                           ),
                         ),
-                        title: Text(
-                          movie['title'],
-                          style: GoogleFonts.poppins(
-                              // textStyle: TextStyle()
+                      ),
+                      SizedBox(
+                        width: 16.0,
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              movie['title'],
+                              style: GoogleFonts.poppins(
+                                fontSize: 18.0,
+                                fontWeight: FontWeight.bold,
                               ),
+                            ),
+                            SizedBox(
+                              height: 8.0,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  movie['overview'],
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.justify,
+                                  style: GoogleFonts.poppins(),
+                                ),
+                                TextButton(
+                                  onPressed: () =>
+                                      _showMovieDetails(context, movie),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        'Continue reading',
+                                        style: GoogleFonts.poppins(),
+                                      ),
+                                      Icon(Icons.arrow_forward),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        subtitle: Text(
-                          movie['overview'],
-                          textAlign: TextAlign.justify,
-                          style: GoogleFonts.poppins(
-                              // textStyle: TextStyle()
-                              ),
-                        ),
-                      );
-                    }).toList()
-                  : controller.filteredMovies.map((movie) {
-                      return ListTile(
-                        leading: Container(
-                          height: 250,
-                          width: 120,
-                          child: Image.network(
-                            movie['backdrop_path'],
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        title: Text(
-                          movie['title'],
-                          style: GoogleFonts.poppins(
-                              // textStyle: TextStyle()
-                              ),
-                        ),
-                        subtitle: Text(
-                          movie['overview'],
-                          textAlign: TextAlign.justify,
-                          style: GoogleFonts.poppins(
-                              // textStyle: TextStyle()
-                              ),
-                        ),
-                      );
-                    }).toList(),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           )
         ],
@@ -177,31 +214,55 @@ class HomeView extends GetView<HomeController> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        // Calculate star rating
+        double voteAverage = movie['vote_average'];
+
+        return ListView(
+          children: [
+            Container(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network(
-                    movie['poster_path'],
-                    width: 160.0,
-                    height: 200.0,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16.0),
+                    child: Image.network(
+                      movie['backdrop_path'],
+                      width: 378.0,
+                      height: 180.0,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                  Column(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          movie['title'],
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.clip,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
                     children: [
                       Text(
-                        movie['title'],
+                        "Release date:",
                         style: GoogleFonts.poppins(
                           textStyle: TextStyle(
-                            fontSize: 20.0,
+                            fontSize: 14.0,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
+                      SizedBox(width: 10.0),
                       Text(
                         movie['release_date'],
                         style: GoogleFonts.poppins(
@@ -212,21 +273,40 @@ class HomeView extends GetView<HomeController> {
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                      )
+                      ),
+                      Spacer(), // Add this spacer to push the star rating to the right
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                          Text(
+                            '$voteAverage', // Display the calculated star rating
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  )
+                  ),
+                  SizedBox(height: 8.0),
+                  Text(
+                    movie['overview'],
+                    textAlign: TextAlign.justify,
+                    style: GoogleFonts.poppins(
+                      textStyle: TextStyle(fontSize: 16.0),
+                    ),
+                    overflow: TextOverflow.clip,
+                  ),
                 ],
               ),
-              SizedBox(height: 8.0),
-              Text(
-                movie['overview'],
-                textAlign: TextAlign.justify,
-                style: GoogleFonts.poppins(
-                  textStyle: TextStyle(fontSize: 16.0),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
