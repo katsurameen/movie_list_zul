@@ -21,4 +21,36 @@ class TmdbService {
       throw Exception('Failed to load movies');
     }
   }
+
+  Future<dynamic> getGenres() async {
+    if (apiKey == null || baseUrl == null) {
+      throw Exception('API_KEY or BASE_URL is missing');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/genre/movie/list?api_key=$apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load genres');
+    }
+  }
+
+  Future<dynamic> getTvs(String category) async {
+    if (apiKey == null || baseUrl == null) {
+      throw Exception('API_KEY or BASE_URL is missing');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/tv/$category?api_key=$apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load movies');
+    }
+  }
 }

@@ -2,7 +2,8 @@
 
 project to see the movie list
 
-![Example Image](assets/picture/Screenshot%202023-09-21%20144627.png)
+![Example Image](assets/picture/pic1.png)
+![Example Image](assets/picture/pic2.png)
 
 ## Getting Started
 

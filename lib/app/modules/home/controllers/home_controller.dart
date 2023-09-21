@@ -5,16 +5,19 @@ import 'package:movie_list_zul/app/services/tmdb_services.dart';
 class HomeController extends GetxController {
   final TmdbService _tmdbService = TmdbService();
   var movies = [].obs;
+  var tvs = [].obs;
   var nowPlayingMovies = [].obs;
-  var topRatedMovies = [].obs;
-  var searchQuery = ''.obs; // Stores the search query
-  var filteredMovies = [].obs; // Stores the filtered movies
+  var upcomingMovies = [].obs;
+  var genres = [].obs; // Stores the genres
+  var searchQuery = ''.obs;
+  var filteredMovies = [].obs;
 
   @override
   void onInit() {
     super.onInit();
-    fetchMovies('now_playing');
-    fetchMovies('popular'); // Fetch popular movies by default
+    fetchData('now_playing');
+    fetchData('popular');
+    fetchData('upcoming');
   }
 
   @override
@@ -27,40 +30,55 @@ class HomeController extends GetxController {
     super.onClose();
   }
 
-  Future<void> fetchMovies(String category) async {
+  Future<void> fetchData(String category) async {
     try {
-      var data = await _tmdbService.getMovies(category);
-      var movieList = data['results'].map((movie) {
+      var movieData = await _tmdbService.getMovies(category);
+      var genreData = await _tmdbService.getGenres();
+
+      genres.assignAll(genreData['genres']); // Store the fetched genres
+
+      var movieList = movieData['results'].map((movie) {
         movie['poster_path'] =
             'https://image.tmdb.org/t/p/w500${movie['poster_path']}';
         movie['backdrop_path'] =
             'https://image.tmdb.org/t/p/w500${movie['backdrop_path']}';
+
+        // Extract genre names based on genre IDs
+        List<String> genreNames = [];
+        for (int genreId in movie['genre_ids']) {
+          for (var genre in genres) {
+            if (genre['id'] == genreId) {
+              genreNames.add(genre['name']);
+              break;
+            }
+          }
+        }
+        movie['genre_names'] = genreNames;
+
         return movie;
       }).toList();
 
-      if (category == 'popular') { // movies popular
+      // movie list
+      if (category == 'popular') {
         movies.assignAll(movieList);
         debugPrint('Popular Movies are fetched');
-      } else if (category == 'now_playing') { // movies now playing
+      } else if (category == 'now_playing') {
         nowPlayingMovies.assignAll(movieList);
         debugPrint('Now Playing Movies are fetched');
-      } else if (category == 'top_rated') { // movies top rated
-        topRatedMovies.assignAll(movieList);
+      } else if (category == 'upcoming') {
+        upcomingMovies.assignAll(movieList);
         debugPrint('Top Rated Movies are fetched');
       }
     } catch (e) {
-      debugPrint('Error fetching movies: $e');
+      debugPrint('Error fetching data: $e');
     }
   }
 
   void filterMovies() {
-    final query =
-        searchQuery.value.toLowerCase(); // Get the lowercase search query
+    final query = searchQuery.value.toLowerCase();
     if (query.isEmpty) {
-      // If the query is empty, show all movies
       filteredMovies.assignAll(movies);
     } else {
-      // Otherwise, filter movies by title containing the query
       filteredMovies.assignAll(
         movies.where((movie) => movie['title'].toLowerCase().contains(query)),
       );
