@@ -3,37 +3,56 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:movie_list_zul/app/data/config/App_colors.dart';
 import '../controllers/home_controller.dart';
+import 'movie_details.dart';
 
 class HomeView extends GetView<HomeController> {
-  const HomeView({Key? key}) : super(key: key);
+  HomeView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final dynamic arguments = Get.arguments;
+    String name = arguments is String ? arguments : "";
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Movie List',
           style: GoogleFonts.poppins(
-              textStyle:
-                  TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold)),
+            textStyle: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+          ),
         ),
         backgroundColor: AppColors.appBarColor,
-        elevation: 10, // Adjust the elevation to control the shadow intensity
+        elevation: 10,
+        automaticallyImplyLeading: false, // Remove the back arrow
+        actions: [
+          // Add a logout button/icon to the right of the AppBar
+          IconButton(
+            icon: Icon(Icons.logout), // You can use any icon you like
+            onPressed: () {
+              // Get.off(() => FirstScreenView());
+              name = "";
+              Get.back();
+            },
+          ),
+        ],
       ),
       backgroundColor: AppColors.primaryBg,
       body: ListView(
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16),
-            child: Text(
-              'Welcome, lets explore!',
-              style: GoogleFonts.poppins(
-                textStyle: TextStyle(
-                  fontSize: 24.0,
-                  fontWeight: FontWeight.bold,
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16),
+                child: Text(
+                  'Hi $name, let\'s explore!',
+                  style: GoogleFonts.poppins(
+                    textStyle: TextStyle(
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 0.0),
@@ -47,7 +66,19 @@ class HomeView extends GetView<HomeController> {
               ),
             ),
           ),
+          SizedBox(
+            height: 10,
+          ),
           Container(
+            decoration: BoxDecoration(boxShadow: [
+              BoxShadow(
+                color: Color.fromARGB(255, 55, 139, 179)
+                    .withOpacity(0.5), // Shadow color
+                spreadRadius: 2, // Spread radius
+                blurRadius: 5, // Blur radius
+                offset: Offset(0, 3), // Offset to bottom-right
+              ),
+            ]),
             height: 200, // Adjust the height as needed
             child: Obx(
               () => ListView.builder(
@@ -57,18 +88,30 @@ class HomeView extends GetView<HomeController> {
                   final movie = controller.movies[index];
                   return GestureDetector(
                     onTap: () => _showMovieDetails(context, movie),
-                    child: Container(
-                      margin: EdgeInsets.all(8.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16.0),
-                        child: Column(
-                          children: [
-                            Image.network(
-                              movie['poster_path'],
-                              width: 120.0,
-                              height: 180.0,
-                            ),
-                          ],
+                    child: Material(
+                      color: AppColors.modalBg,
+                      child: Container(
+                        decoration: BoxDecoration(boxShadow: [
+                          BoxShadow(
+                            color: Color.fromARGB(255, 133, 133, 133)
+                                .withOpacity(0.5), // Shadow color
+                            spreadRadius: 2, // Spread radius
+                            blurRadius: 4, // Blur radius
+                            offset: Offset(1, 2), // Offset to bottom-right
+                          ),
+                        ], borderRadius: BorderRadius.circular(16.0)),
+                        margin: EdgeInsets.all(8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16.0),
+                          child: Column(
+                            children: [
+                              Image.network(
+                                movie['poster_path'],
+                                width: 120.0,
+                                height: 180.0,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -213,153 +256,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   void _showMovieDetails(BuildContext context, Map<String, dynamic> movie) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        // Calculate star rating
-        dynamic voteAverage = movie['vote_average'];
-        String formattedVoteAverage = '';
-
-        if (voteAverage is int) {
-          formattedVoteAverage = '$voteAverage';
-        } else if (voteAverage is double) {
-          formattedVoteAverage = voteAverage.toStringAsFixed(1);
-        }
-
-        List<String> genreNames = movie['genre_names'] ?? <String>[];
-
-        return ListView(
-          children: [
-            Container(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16.0),
-                    child: Image.network(
-                      movie['backdrop_path'],
-                      width: 378.0,
-                      height: 180.0,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          movie['title'],
-                          style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.clip,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        "Release date:",
-                        style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                      SizedBox(width: 10.0),
-                      Text(
-                        movie['release_date'],
-                        style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.italic),
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Spacer(), // Add this spacer to push the star rating to the right
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                          Text(
-                            formattedVoteAverage, // Display the calculated star rating
-                            style: GoogleFonts.poppins(
-                              textStyle: TextStyle(
-                                fontSize: 16.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        "Genres:",
-                        style: GoogleFonts.poppins(
-                          textStyle: TextStyle(
-                              fontSize: 14.0,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                      SizedBox(width: 10.0),
-                      Expanded(
-                        child: Text(
-                          genreNames.join(
-                              ', '), // Display genre names separated by commas
-                          style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
-                              fontSize: 13.0,
-                              fontWeight: FontWeight.bold,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    "Overview",
-                    style: GoogleFonts.poppins(
-                      textStyle: TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.clip,
-                  ),
-                  Text(
-                    movie['overview'],
-                    textAlign: TextAlign.justify,
-                    style: GoogleFonts.poppins(
-                      textStyle: TextStyle(fontSize: 16.0),
-                    ),
-                    overflow: TextOverflow.clip,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    // Use the imported custom function
+    showMovieDetails(context, movie);
   }
 }

@@ -3,14 +3,19 @@ import 'package:get/get.dart';
 import 'package:movie_list_zul/app/services/tmdb_services.dart';
 
 class HomeController extends GetxController {
-  final TmdbService _tmdbService = TmdbService();
+  final TmdbService _tmdbService;
   var movies = [].obs;
   var tvs = [].obs;
   var nowPlayingMovies = [].obs;
   var upcomingMovies = [].obs;
-  var genres = [].obs; // Stores the genres
+  var genres = [].obs;
   var searchQuery = ''.obs;
   var filteredMovies = [].obs;
+
+  
+
+
+  HomeController(this._tmdbService);
 
   @override
   void onInit() {
